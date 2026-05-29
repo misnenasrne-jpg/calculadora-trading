@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Trading</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --border: #2a2a38;
+    --border2: #3a3a50;
+    --text: #e8e8f0;
+    --muted: #6868a0;
+    --accent: #7b6ff0;
+    --accent2: #9d94f5;
+    --green: #3dd68c;
+    --red: #f05b5b;
+    --amber: #f0b55b;
+    --green-bg: rgba(61,214,140,0.08);
+    --red-bg: rgba(240,91,91,0.08);
+    --amber-bg: rgba(240,181,91,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    color: var(--accent2);
+    text-transform: uppercase;
+  }
+
+  header span {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-wrap input {
+    width: 100%;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 36px 9px 12px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .input-wrap input:focus { border-color: var(--accent); }
+
+  .input-wrap .unit {
+    position: absolute;
+    right: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    pointer-events: none;
+  }
+
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .slider-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .slider-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+
+  .slider-val {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent2);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .divider {
+    border: none;
+    border-top: 0.5px solid var(--border);
+    margin: 16px 0;
+  }
+
+  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .metric {
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .metric-label {
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .metric-value.good { color: var(--green); }
+  .metric-value.warn { color: var(--amber); }
+  .metric-value.bad  { color: var(--red); }
+
+  .rr-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .rr-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--green);
+    transition: width 0.3s, background 0.3s;
+  }
+
+  .rr-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--muted);
+  }
+
+  .alerts { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .alert {
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    display: none;
+  }
+
+  .alert.warn { background: var(--amber-bg); color: var(--amber); border: 0.5px solid rgba(240,181,91,0.2); display: block; }
+  .alert.bad  { background: var(--red-bg);   color: var(--red);   border: 0.5px solid rgba(240,91,91,0.2);  display: block; }
+
+  .direction-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  .direction-badge.long { background: var(--green-bg); color: var(--green); border: 0.5px solid rgba(61,214,140,0.2); }
+  .direction-badge.short { background: var(--red-bg); color: var(--red); border: 0.5px solid rgba(240,91,91,0.2); }
+  .direction-badge.neutral { background: var(--bg3); color: var(--muted); border: 0.5px solid var(--border); }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Position Calc</h1>
+    <span>// BingX 20x</span>
+  </header>
+
+  <div class="card">
+    <div class="card-title">Capital & riesgo</div>
+    <div class="grid2">
+      <div class="field">
+        <label>Capital total</label>
+        <div class="input-wrap">
+          <input type="number" id="capital" value="1000" min="1" oninput="calc()">
+          <span class="unit">USDT</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Riesgo / operación</label>
+        <div class="input-wrap">
+          <input type="number" id="riesgo" value="1" min="0.1" max="10" step="0.1" oninput="calc()">
+          <span class="unit">%</span>
+        </div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="field">
+      <label>Apalancamiento</label>
+      <div class="slider-row">
+        <input type="range" id="apal" min="1" max="50" value="20" step="1"
+          oninput="document.getElementById('apal-out').textContent=this.value+'x'; calc()">
+        <span class="slider-val" id="apal-out">20x</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Precios</div>
+    <div id="dir-badge" class="direction-badge neutral">
+      <span class="dot"></span>
+      <span id="dir-text">—</span>
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Entrada</label>
+        <div class="input-wrap">
+          <input type="number" id="entrada" value="0.0653" step="0.0001" oninput="calc()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Stop loss</label>
+        <div class="input-wrap">
+          <input type="number" id="stop" value="0.0620" step="0.0001" oninput="calc()">
+        </div>
+      </div>
+      <div class="field">
+        <label>Target</label>
+        <div class="input-wrap">
+          <input type="number" id="target" value="0.0733" step="0.0001" oninput="calc()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Resultado</div>
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-label">Tamaño posición</div>
+        <div class="metric-value" id="res-size">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Riesgo (USDT)</div>
+        <div class="metric-value" id="res-riesgo">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Ratio R:B</div>
+        <div class="metric-value" id="res-rr">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Beneficio potencial</div>
+        <div class="metric-value good" id="res-profit">—</div>
+      </div>
+    </div>
+
+    <div class="rr-track">
+      <div class="rr-fill" id="rr-fill" style="width:0%"></div>
+    </div>
+    <div class="rr-labels">
+      <span>0</span>
+      <span>1:1</span>
+      <span>1:2</span>
+      <span>1:3</span>
+      <span>1:4+</span>
+    </div>
+
+    <div class="alerts" id="alerts"></div>
+  </div>
+
+</div>
+
+<script>
+function calc() {
+  const capital = parseFloat(document.getElementById('capital').value) || 0;
+  const riesgoPct = parseFloat(document.getElementById('riesgo').value) || 0;
+  const entrada = parseFloat(document.getElementById('entrada').value) || 0;
+  const stop = parseFloat(document.getElementById('stop').value) || 0;
+  const target = parseFloat(document.getElementById('target').value) || 0;
+  const apal = parseFloat(document.getElementById('apal').value) || 1;
+
+  const badge = document.getElementById('dir-badge');
+  const dirText = document.getElementById('dir-text');
+
+  if (entrada && stop && target) {
+    const isLong = stop < entrada;
+    badge.className = 'direction-badge ' + (isLong ? 'long' : 'short');
+    dirText.textContent = isLong ? 'LONG' : 'SHORT';
+  }
+
+  if (!capital || !riesgoPct || !entrada || !stop || !target) return;
+
+  const distStop = Math.abs(entrada - stop);
+  const distTarget = Math.abs(target - entrada);
+  if (distStop === 0) return;
+
+  const stopPct = (distStop / entrada) * 100;
+  const riesgoUsdt = capital * (riesgoPct / 100);
+  const tamano = (riesgoUsdt / (stopPct / 100)) / apal;
+  const rr = distTarget / distStop;
+  const profit = riesgoUsdt * rr;
+
+  document.getElementById('res-size').textContent = tamano.toFixed(2) + ' U';
+  document.getElementById('res-riesgo').textContent = riesgoUsdt.toFixed(2) + ' U';
+
+  const rrEl = document.getElementById('res-rr');
+  rrEl.textContent = '1 : ' + rr.toFixed(2);
+  rrEl.className = 'metric-value' + (rr >= 2 ? ' good' : rr >= 1.2 ? ' warn' : ' bad');
+
+  document.getElementById('res-profit').textContent = '+' + profit.toFixed(2) + ' U';
+
+  const barPct = Math.min((rr / 4) * 100, 100);
+  const fill = document.getElementById('rr-fill');
+  fill.style.width = barPct + '%';
+  fill.style.background = rr >= 2 ? 'var(--green)' : rr >= 1.2 ? 'var(--amber)' : 'var(--red)';
+
+  const alerts = [];
+  if (rr < 1.5) alerts.push({ type: 'warn', msg: '⚠ Ratio bajo — considera buscar mejor entrada' });
+  if (riesgoPct > 2) alerts.push({ type: 'warn', msg: '⚠ Riesgo > 2% — peligroso con apalancamiento alto' });
+  if (stopPct * apal > 15) alerts.push({ type: 'bad', msg: '✕ Stop implica ' + (stopPct * apal).toFixed(1) + '% del margen' });
+
+  const alertsEl = document.getElementById('alerts');
+  alertsEl.innerHTML = alerts.map(a => `<div class="alert ${a.type}">${a.msg}</div>`).join('');
+}
+calc();
+</script>
+</body>
+</html>
